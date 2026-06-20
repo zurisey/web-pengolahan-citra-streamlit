@@ -1,0 +1,15 @@
+[theme]
+# Mengambil warna dari .btn-primary dan .hero-sidebar
+primaryColor = "#669899"
+
+# Mengambil warna dari body background-color
+backgroundColor = "#ffffff"
+
+# Mengambil warna dari .upload-zone, .comp-card, dan .info-box
+secondaryBackgroundColor = "#f8fafc"
+
+# Mengambil warna teks utama dari body color
+textColor = "#1e293b"
+
+# Mengambil dari font-family: 'Inter', sans-serif;
+font = "sans serif"
