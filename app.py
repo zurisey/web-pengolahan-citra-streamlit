@@ -32,7 +32,7 @@ def inisialisasi_deep_learning_model():
 # ==========================================
 st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=300;400;500;600;700;800&display=swap');
 
     html, body, [class*="css"] { 
         font-family: 'Plus Jakarta Sans', sans-serif !important; 
@@ -334,9 +334,9 @@ if menu == "Optimasi Gambar":
             
             col1, col2 = st.columns(2)
             with col1:
-                st.image(img_gray_res, caption="Format Hasil Grayscale (1-Channel)", use_container_width=True)
+                st.image(img_gray_res, caption="Format Hasil Grayscale (1-Channel)", width='stretch')
             with col2:
-                st.image(img_rgb_res, caption="Format Hasil RGB (3-Channel)", use_container_width=True)
+                st.image(img_rgb_res, caption="Format Hasil RGB (3-Channel)", width='stretch')
             
             rasio_gray = stats_gray["ukuran_asli"] / stats_gray["ukuran_kompresi"]
             save_gray = (1 - (stats_gray["ukuran_kompresi"] / stats_gray["ukuran_asli"])) * 100
@@ -404,13 +404,13 @@ elif menu == "Pencocokan Wajah":
         st.markdown('<p style="text-align:center; font-weight:700; margin-bottom:10px;">Foto Pertama (Referensi)</p>', unsafe_allow_html=True)
         file1 = st.file_uploader("Unggah foto pertama", type=["jpg", "jpeg", "png"], key="ufile1", label_visibility="collapsed")
         if file1:
-            st.image(Image.open(file1), use_container_width=True)
+            st.image(Image.open(file1), width='stretch')
 
     with col2:
         st.markdown('<p style="text-align:center; font-weight:700; margin-bottom:10px;">Foto Kedua (Target Verifikasi)</p>', unsafe_allow_html=True)
         file2 = st.file_uploader("Unggah foto kedua", type=["jpg", "jpeg", "png"], key="ufile2", label_visibility="collapsed")
         if file2:
-            st.image(Image.open(file2), use_container_width=True)
+            st.image(Image.open(file2), width='stretch')
 
     if file1 and file2:
         st.markdown("<br><br>", unsafe_allow_html=True)
@@ -424,19 +424,25 @@ elif menu == "Pencocokan Wajah":
                 f.write(file2.getbuffer())
 
             try:
+                # FIX: Menggunakan metode pembongkaran variabel dinamis (*raw_results)
+                # untuk menghindari error 'too many values to unpack' akibat perbedaan versi fungsi kembalian
                 if "Deep Learning" in metode_dipilih:
                     with st.spinner("Mengintegrasikan jaringan konvolusional (CNN) & ekstraksi model DeepFace..."):
                         import model.deepface_analyser as dfa
                         model_siap = inisialisasi_deep_learning_model()
-                        sim_percentage, metric_score, kesimpulan = dfa.bandingkan_wajah_deep(path1, path2)
+                        raw_results = dfa.bandingkan_wajah_deep(path1, path2)
                         nama_metrik = "Cosine Distance"
                 else:
                     with st.spinner("Memetakan tekstur permukaan citra lokal (Local Binary Pattern) & Ruang Eigen..."):
                         import model.eigenface as ef
-                        sim_percentage, metric_score, kesimpulan = ef.compare_faces(path1, path2)
+                        raw_results = ef.compare_faces(path1, path2)
                         nama_metrik = "Cosine Similarity"
 
-                # FIX: Mengganti HTML wrapper dengan pembatas bawaan Streamlit
+                # Ambil nilai secara aman, isi dengan default jika data kurang dari yang diekspektasikan
+                sim_percentage = float(raw_results[0]) if len(raw_results) > 0 else 0.0
+                metric_score = float(raw_results[1]) if len(raw_results) > 1 else 0.0
+                kesimpulan = str(raw_results[2]) if len(raw_results) > 2 else "Analisis Selesai"
+
                 st.markdown('<hr style="border:1px solid #E2E8F0; margin-top: 40px; margin-bottom: 40px;">', unsafe_allow_html=True)
                 st.markdown('<h3 style="color:#0F172A; margin-top:0; font-weight:800; text-align:center; margin-bottom:30px;">Hasil Komparasi Biometrik</h3>', unsafe_allow_html=True)
                 
@@ -444,7 +450,7 @@ elif menu == "Pencocokan Wajah":
                 c1.metric(f"Skor Jarak ({nama_metrik})", f"{metric_score:.4f}")
                 c2.metric("Persentase Kemiripan", f"{sim_percentage:.2f}%")
 
-                nilai_progress = min(int(sim_percentage), 100)
+                nilai_progress = min(max(int(sim_percentage), 0), 100)
                 st.markdown(f'<p style="margin-top:35px; font-weight:700; color:#475569; font-size:1rem; text-align:center;">Match Score: {sim_percentage:.2f}%</p>', unsafe_allow_html=True)
                 st.progress(nilai_progress / 100.0)
                 
