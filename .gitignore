@@ -1,0 +1,13 @@
+# Mengabaikan folder lingkungan virtual (Virtual Environment)
+env/
+
+# Mengabaikan folder cache Python otomatis
+__pycache__/
+*.pyc
+
+# Mengabaikan folder penyimpanan gambar sementara hasil upload pengguna
+temp_uploads/
+
+# Mengabaikan pengaturan lokal editor jika ada (opsional)
+.vscode/
+.idea/
